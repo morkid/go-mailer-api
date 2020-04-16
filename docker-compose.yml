@@ -1,0 +1,22 @@
+version: '3.7'
+
+networks:
+  go: {}
+
+services:
+  go:
+    image: golang:1.12-buster
+    working_dir: /opt/app
+    networks:
+      - go
+    volumes:
+      - .:/opt/app
+      - ./cache/go-build:/root/.cache/go-build
+      - ./cache/src:/go/src
+      - ./cache/pkg:/go/pkg
+      - ./cache/bin:/go/bin
+    environment:
+      - TZ=${TZ:-Asia/Jakarta}
+    ports:
+      - "${PORT:-8080}:${PORT:-8080}"
+    command: [ "tail", "-f", "/etc/hosts" ]

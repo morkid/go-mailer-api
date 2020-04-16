@@ -1,0 +1,6 @@
+*
+!*.go
+!.gitignore
+!docker-compose.yml
+!/cache/
+!*.md
