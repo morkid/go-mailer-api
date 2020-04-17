@@ -10,9 +10,11 @@ type MailConfig struct {
     Bcc []interface{}               `json:"bcc"`
     Subject string                  `json:"subject,omitempty"`
     Body string                     `json:"body,omitempty"`
-    Attachments []interface{}        `json:"attachments"`
+    Attachments []interface{}       `json:"attachments"`
     Username string                 `json:"username,omitempty"`
     Password string                 `json:"password,omitempty"`
     PlainText bool                  `json:"plain_text"`
     Single bool                     `json:"single"`
+    Thread bool                     `json:"thread"`
+    Cli bool                        `json:"cli,omitempty"`
 }

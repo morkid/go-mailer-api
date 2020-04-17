@@ -4,7 +4,7 @@ import(
     "gopkg.in/gomail.v2"
     "fmt"
 )
-func Send(config *MailConfig, message *gomail.Message, cli bool) {
+func Send(config *MailConfig, message *gomail.Message) {
     if config.Single {
         for _, o := range config.To {
             tos := []interface{}{}
@@ -24,11 +24,13 @@ func Send(config *MailConfig, message *gomail.Message, cli bool) {
                 Password: config.Password,
                 PlainText: config.PlainText,
                 Single: false,
+                Thread: config.Thread,
+                Cli: false,
             }
-            if (cli) {
-                SendMail(&config2, cli)
+            if (config2.Thread) {
+                go SendMail(&config2)
             } else {
-                go SendMail(&config2, cli)
+                SendMail(&config2)
             }
         }
     } else {
@@ -39,7 +41,7 @@ func Send(config *MailConfig, message *gomail.Message, cli bool) {
     }
 }
 
-func SendMail(config *MailConfig, cli bool) {
+func SendMail(config *MailConfig) {
     Normalize(config)
     m := gomail.NewMessage()
     username := config.Username
@@ -73,15 +75,15 @@ func SendMail(config *MailConfig, cli bool) {
     m.SetHeaders(headers)
     m.SetHeader("Subject", config.Subject)
     if config.PlainText {
-        m.SetBody("text/html", config.Body)
-    } else {
         m.SetBody("text/plain", config.Body)
+    } else {
+        m.SetBody("text/html", config.Body)
     }
 
-    if (cli) {
-        Send(config, m, cli)
-    } else {
-        go Send(config, m, cli)
-    }
+    // if (config.Thread) {
+    //     go Send(config, m)
+    // } else {
+    //     Send(config, m)
+    // }
 
 }

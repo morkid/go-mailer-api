@@ -42,7 +42,7 @@ func main() {
     flag.Var(&tos, "to", "Receiver Email, define multiple to send more than one receiver")
     flag.Var(&ccs, "cc", "CC, define multiple to send more than one cc")
     flag.Var(&bccs, "bcc", "BCC, define multiple to send more than one bcc")
-    flag.Var(&attachments, "attachments", "Set email attachments")
+    flag.Var(&attachments, "attachment", "Set email attachments")
 
     flag.Parse()
 
@@ -92,13 +92,15 @@ func main() {
             Password: *password,
             PlainText: *plaintext,
             Single: *single,
+            Cli: true,
+            Thread: false,
         }
         if (*debug) {
             Normalize(&config)
             j, _ := json.MarshalIndent(&config, "", "    ")
             fmt.Println(string(j))
         } else {
-            SendMail(&config, true)
+            SendMail(&config)
         }
     }
 }
