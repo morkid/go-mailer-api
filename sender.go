@@ -25,7 +25,7 @@ func Send(config *MailConfig, message *gomail.Message) {
                 PlainText: config.PlainText,
                 Single: false,
                 Thread: config.Thread,
-                Cli: false,
+                SkipAttachmentCheck: true,
             }
             if (config2.Thread) {
                 go SendMail(&config2)
@@ -61,7 +61,7 @@ func SendMail(config *MailConfig) {
 
     if len(config.To) > 0 {
         for _, o := range config.To {
-            addr := o.(map[string]interface{})
+            addr, _ := o.(map[string]interface{})
             a := addr["address"].(string)
             n := addr["name"].(string)
             if n == "" {
@@ -80,10 +80,17 @@ func SendMail(config *MailConfig) {
         m.SetBody("text/html", config.Body)
     }
 
-    // if (config.Thread) {
-    //     go Send(config, m)
-    // } else {
-    //     Send(config, m)
-    // }
+    if len(config.Attachments) > 0 {
+        for _, o := range config.Attachments {
+            fullpath, _ := o.(string)
+            m.Attach(fullpath)
+        }
+    }
+
+    if (config.Thread) {
+        go Send(config, m)
+    } else {
+        Send(config, m)
+    }
 
 }

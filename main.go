@@ -92,7 +92,7 @@ func main() {
             Password: *password,
             PlainText: *plaintext,
             Single: *single,
-            Cli: true,
+            SkipAttachmentCheck: true,
             Thread: false,
         }
         if (*debug) {

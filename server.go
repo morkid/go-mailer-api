@@ -20,11 +20,12 @@ func StartServer(debug bool) {
         var config MailConfig
         c.BindJSON(&config)
         config.Thread = true
-        config.Cli = false
-        SendMail(&config)
+        config.SkipAttachmentCheck = false
         if (debug) {
+            SendMail(&config)
             c.JSON(200, &config)
         } else {
+            go SendMail(&config)
             c.JSON(200, gin.H{
                 "message": "sent",
             })

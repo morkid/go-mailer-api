@@ -15,6 +15,7 @@ type MailConfig struct {
     Password string                 `json:"password,omitempty"`
     PlainText bool                  `json:"plain_text"`
     Single bool                     `json:"single"`
-    Thread bool                     `json:"thread"`
-    Cli bool                        `json:"cli,omitempty"`
+    Thread bool                     `json:"-"`
+    // Cli bool                        `json:"-"`
+    SkipAttachmentCheck bool        `json:"-"`
 }
