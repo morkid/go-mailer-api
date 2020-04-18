@@ -64,7 +64,7 @@ mailer --provider gmail \
   --attachment file1.txt \
   --attachment file2.txt
 ```
-Don't forget to enable less secure apps to your gmail as a sender
+Don't forget to enable less secure apps to your gmail as a sender  
 [Enable less secure apps](https://support.google.com/a/answer/6260879)
 
 # Send email using Rest API
