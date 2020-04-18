@@ -7,7 +7,7 @@ RUN mkdir -p /opt/app && \
     cd /opt/app && \
     apt update && \
     apt install -y --no-install-recommends xz-utils && \
-    go get -d -v gopkg.in/gomail.v2 github.com/gin-gonic/gin && \
+    go get -d -v gopkg.in/gomail.v2 && \
     go get -v github.com/pwaller/goupx && \
     curl -ksSL https://github.com/upx/upx/releases/download/v3.96/upx-3.96-amd64_linux.tar.xz -o upx.tar.xz && \
     mkdir upx && \

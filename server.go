@@ -1,34 +1,81 @@
 package main
 
 import (
-    "github.com/gin-gonic/gin"
-    "strconv"
-    "log"
+    "fmt"
+    "io"
+    "io/ioutil"
+    "encoding/json"
+    "net/http"
+    "mime/multipart"
     "path"
+    "strings"
+    "log"
+    "os"
+    "strconv"
 )
 
-func StartServer(endpoint string, debug bool) {
-    if (!debug) {
-        gin.SetMode(gin.ReleaseMode)
+func SaveUploadedFile(file *multipart.FileHeader, dst string) error {
+	src, err := file.Open()
+	if err != nil {
+		return err
+	}
+	defer src.Close()
+
+	out, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	_, err = io.Copy(out, src)
+	return err
+}
+
+func HttpLogging(res http.ResponseWriter, req *http.Request, status int) {
+    var message = "OK"
+    if status >= 300 {
+        switch status {
+            case 400: message = "bad request"
+            case 404: message = "not found"
+            case 415: message = "unsupported media type"
+            case 501: message = "not implemented"
+            case 500: message = "internal server error"
+            default:
+                message = "internal server error"
+                status = 500
+        }
+        http.Error(res, message, status)
     }
-    rg := gin.Default()
+    log.Println(status, req.Method, "\"" + req.RequestURI + "\"")
+}
 
-    r := rg.Group(endpoint)
-    {
-        r.GET("", func (c *gin.Context) {
-            c.JSON(501, gin.H{
-                "message": "Not implemented",
-            })
-        })
 
-        r.POST("", func (c *gin.Context) {
-            var config MailConfig
-            var redirect = ""
-            config.Thread = true
-            form, e := c.MultipartForm()
-            if e == nil {
+
+func StartServer(endpoint string, debug bool) {
+    if endpoint == "" {
+        endpoint = "/"
+    }
+    http.HandleFunc(endpoint, func(res http.ResponseWriter, req *http.Request) {
+        if req.URL.Path != "/" {
+            HttpLogging(res, req, 404)
+            return
+        }
+        if req.Method != "POST" {
+            HttpLogging(res, req, 501)
+            return
+        }
+
+        var contentType = strings.ToLower(req.Header.Get("Content-type"))
+        config := MailConfig{
+            Thread: true,
+        }
+        var redirect = ""
+
+        if strings.HasPrefix(contentType, "multipart/form-data") {
+            err := req.ParseMultipartForm(32 << 20)
+            if nil == err {
                 var basepath = GetTmpDir()
-
+                form := req.MultipartForm
                 if len(form.Value["redirect"]) > 0 {
                     redirect = form.Value["redirect"][0]
                 }
@@ -108,39 +155,58 @@ func StartServer(endpoint string, debug bool) {
                 if len(form.File["attachments"]) > 0 {
                     for _, file := range form.File["attachments"] {
                         var fullpath = path.Join(basepath, file.Filename)
-                        if err := c.SaveUploadedFile(file, fullpath); err != nil {
+                        if err := SaveUploadedFile(file, fullpath); err != nil {
                             log.Println(err)
                         } else {
                             config.Attachments = append(config.Attachments, fullpath)
                         }
                     }
                 }
-
                 config.SkipAttachmentCheck = true
             } else {
-                config.SkipAttachmentCheck = false
-                c.BindJSON(&config)
+                HttpLogging(res, req, 400)
+                return
             }
+        } else if strings.HasPrefix(contentType, "application/json") {
+            body, _ := ioutil.ReadAll(req.Body)
+            json.Unmarshal(body, &config)
+            config.SkipAttachmentCheck = false
+        } else {
+            HttpLogging(res, req, 415)
+            return
+        }
 
-            if (debug) {
-                SendMail(&config)
-                if redirect != "" {
-                    c.Redirect(302, redirect)
-                } else {
-                    c.JSON(200, &config)
-                }
+        if redirect != "" {
+            http.Redirect(res, req, redirect, 302)
+            return
+        }
+
+        HttpLogging(res, req, 200)
+        res.Header().Add("Content-type", "application/json")
+
+        if (debug) {
+            SendMail(&config)
+            if redirect != "" {
+                http.Redirect(res, req, redirect, 302)
             } else {
-                go SendMail(&config)
-                if redirect != "" {
-                    c.Redirect(302, redirect)
-                } else {
-                    c.JSON(200, gin.H{
-                        "message": "sent",
-                    })
-                }
+                b, _ := json.Marshal(config)
+                fmt.Fprintf(res, string(b))
             }
-        })
+        } else {
+            go SendMail(&config)
+            if redirect != "" {
+                http.Redirect(res, req, redirect, 302)
+            } else {
+                fmt.Fprintf(res, "{\"message\":\"sent\"}")
+            }
+        }
+    })
+
+    var port = os.Getenv("PORT")
+    if port == "" {
+        port = "8080"
     }
 
-    rg.Run()
+    log.Println("Server started at port "+port)
+    http.ListenAndServe(":" + port, nil)
 }

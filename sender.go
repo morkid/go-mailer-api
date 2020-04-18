@@ -38,7 +38,7 @@ func Send(config *MailConfig, message *gomail.Message) {
         dialer := gomail.NewDialer(config.Host, config.Port, config.Username, config.Password)
         dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
         if err := dialer.DialAndSend(message); err != nil {
-            log.Println(err)
+            log.Println("SEND_FAILED", err)
         }
     }
 }

@@ -67,8 +67,9 @@ func main() {
 
         StartServer(ep, dbg)
     } else {
-        if tos == nil {
+        if tos == nil || *from == "" {
             flag.PrintDefaults()
+            return
         }
         var tosStrings = []interface{}{}
         var ccsStrings = []interface{}{}
