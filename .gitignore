@@ -1,6 +1,8 @@
-*
+/*
 !*.go
+!.dockerignore
 !.gitignore
 !docker-compose.yml
 !/cache/
 !*.md
+!Dockerfile

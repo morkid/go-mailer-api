@@ -27,6 +27,7 @@ func main() {
 
     httpEnabled := flag.Bool("http", false, "Enable http server")
     port := flag.Int("port", 8080, "Start http with port")
+    endpoint := flag.String("endpoint", "/", "Start http with endpoint")
     help := flag.Bool("help", false, "Display this help")
     debug := flag.Bool("debug", false, "enable debug (default false)")
 
@@ -55,7 +56,16 @@ func main() {
         if *port != 8080 {
             os.Setenv("PORT", strconv.Itoa(*port))
         }
-        StartServer(*debug)
+        var ep string = *endpoint
+        var dbg bool = *debug
+        if os.Getenv("ENDPOINT") != "" {
+            ep = os.Getenv("ENDPOINT")
+        }
+        if os.Getenv("GIN_MODE") != "" {
+            dbg = os.Getenv("GIN_MODE") != "release"
+        }
+
+        StartServer(ep, dbg)
     } else {
         if tos == nil {
             flag.PrintDefaults()
