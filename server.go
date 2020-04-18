@@ -3,7 +3,7 @@ package main
 import (
     "github.com/gin-gonic/gin"
     "strconv"
-    "fmt"
+    "log"
     "path"
 )
 
@@ -107,7 +107,7 @@ func StartServer(debug bool) {
                 for _, file := range form.File["attachments"] {
                     var fullpath = path.Join(basepath, file.Filename)
                     if err := c.SaveUploadedFile(file, fullpath); err != nil {
-                        fmt.Println(err)
+                        log.Println(err)
                     } else {
                         config.Attachments = append(config.Attachments, fullpath)
                     }

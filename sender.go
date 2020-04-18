@@ -2,7 +2,8 @@ package main
 
 import(
     "gopkg.in/gomail.v2"
-    "fmt"
+    "crypto/tls"
+    "log"
 )
 func Send(config *MailConfig, message *gomail.Message) {
     if config.Single {
@@ -35,8 +36,9 @@ func Send(config *MailConfig, message *gomail.Message) {
         }
     } else {
         dialer := gomail.NewDialer(config.Host, config.Port, config.Username, config.Password)
+        dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
         if err := dialer.DialAndSend(message); err != nil {
-            fmt.Println(err)
+            log.Println(err)
         }
     }
 }

@@ -16,6 +16,5 @@ type MailConfig struct {
     PlainText bool                  `json:"plain_text"`
     Single bool                     `json:"single"`
     Thread bool                     `json:"-"`
-    // Cli bool                        `json:"-"`
     SkipAttachmentCheck bool        `json:"-"`
 }
