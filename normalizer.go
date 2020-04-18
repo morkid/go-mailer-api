@@ -35,10 +35,18 @@ func RandomNumber() string {
     return strconv.FormatInt(time.Now().UTC().UnixNano(), 10)
 }
 
-func NormalizeAttachment(attachments []interface{}, skip bool) []interface{} {
-    normalized := []interface{}{}
+func GetTmpDir() string {
     basepath, e := ioutil.TempDir("", "go_mailer_" + RandomNumber())
     if e != nil {
+        return ""
+    }
+    return basepath
+}
+
+func NormalizeAttachment(attachments []interface{}, skip bool) []interface{} {
+    normalized := []interface{}{}
+    var basepath = GetTmpDir()
+    if basepath == "" {
         return normalized
     }
 
@@ -51,9 +59,9 @@ func NormalizeAttachment(attachments []interface{}, skip bool) []interface{} {
                     if nil == er {
                         if _, e := os.Stat(fullpath); !os.IsNotExist(e) {
                             normalized = append(normalized, fullpath)
-                            continue
                         }
                     }
+                    continue
                 }
 
                 var fullpath = ConvertDataToFilePath(index, basepath, map[string]interface{}{

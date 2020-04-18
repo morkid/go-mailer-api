@@ -92,5 +92,4 @@ func SendMail(config *MailConfig) {
     } else {
         Send(config, m)
     }
-
 }
