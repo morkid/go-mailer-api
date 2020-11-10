@@ -30,8 +30,8 @@ build:
   artifacts:
     name: "$CI_JOB_STAGE-$CI_COMMIT_REF_NAME"
     paths:
-      - app/mailer.bin
-      - app/ca-certificates.crt
+      - mailer.bin
+      - ca-certificates.crt
   only:
     refs:
       - master
