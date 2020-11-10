@@ -23,8 +23,7 @@ build:
       tar -xJvpf /tmp/upx.tar.xz --strip-components=1 -C $GOPATH/src/upx && \
       ln -s $GOPATH/src/upx/upx $GOPATH/bin/upx; \
       fi
-    - cd app
-    - go mod download
+    - go get -d -v
     - go build -a -tags "netgo" -ldflags '-s -w -extldflags "-static"' -o mailer.bin .
     - goupx mailer.bin
     - if [ -f /etc/ssl/certs/ca-certificates.crt ] ; then cp /etc/ssl/certs/ca-certificates.crt . ; fi
