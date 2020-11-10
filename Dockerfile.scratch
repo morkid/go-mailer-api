@@ -1,5 +1,5 @@
 FROM scratch
 ENV TZ=Asia/Jakarta
-COPY app/mailer.bin /bin/mailer
-COPY app/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+COPY mailer.bin /bin/mailer
+COPY ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 CMD ["mailer", "--http"]
