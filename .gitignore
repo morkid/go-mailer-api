@@ -5,4 +5,5 @@
 !docker-compose.yml
 !/cache/
 !*.md
-!Dockerfile
+!Dockerfile.*
+!/.gitlab-ci.yml

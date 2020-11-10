@@ -1,0 +1,53 @@
+variables:
+  GOOS: linux
+  GOARCH: amd64
+  CGO_ENABLED: 0
+  UPX_URL: https://github.com/upx/upx/releases/download/v3.96/upx-3.96-amd64_linux.tar.xz
+  NAME: mailer
+
+stages:
+  - "build"
+  - "release"
+  - "deploy"
+
+build:
+  image: golang:1.15-buster
+  stage: "build"
+  script:
+    - |
+      if [ ! -f "$GOPATH/bin/upx" ]; then \
+      apt update && apt install -y --no-install-recommends xz-utils && \
+      go get -v github.com/pwaller/goupx && \
+      curl -ksSL $UPX_URL -o /tmp/upx.tar.xz && \
+      mkdir -p $GOPATH/src/upx && \
+      tar -xJvpf /tmp/upx.tar.xz --strip-components=1 -C $GOPATH/src/upx && \
+      ln -s $GOPATH/src/upx/upx $GOPATH/bin/upx; \
+      fi
+    - cd app
+    - go mod download
+    - go build -a -tags "netgo" -ldflags '-s -w -extldflags "-static"' -o mailer.bin .
+    - goupx mailer.bin
+    - if [ -f /etc/ssl/certs/ca-certificates.crt ] ; then cp /etc/ssl/certs/ca-certificates.crt . ; fi
+  artifacts:
+    name: "$CI_JOB_STAGE-$CI_COMMIT_REF_NAME"
+    paths:
+      - app/mailer.bin
+      - app/ca-certificates.crt
+  only:
+    refs:
+      - master
+  needs: []
+
+release:
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+  stage: "release"
+  needs: ["build"]
+  script:
+    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
+    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile.scratch --destination $CI_REGISTRY_IMAGE
+  only:
+    refs:
+      - master
+  when: on_success
