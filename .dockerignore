@@ -1,4 +1,6 @@
 *
-!Dockerfile
+!Dockerfile*
+!*.bin
+!*.crt
 !docker-compose.yml
 !*.go
